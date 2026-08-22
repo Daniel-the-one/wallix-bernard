@@ -1,0 +1,54 @@
+name: wallix
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Pour le sélecteur de pays (indicatif + nom + drapeau)
+  country_picker: ^2.0.26
+  pinput: ^5.0.1
+  shared_preferences: ^2.2.3
+  iconsax_flutter: ^1.0.1
+  http: ^1.1.0
+  provider: ^6.0.5
+  intl: ">=0.19.0 <1.0.0"
+  mobile_scanner: ^3.5.2
+  url_launcher: ^6.2.1
+  firebase_core: ^3.1.0
+  firebase_messaging: ^15.0.0
+  firebase_analytics: ^11.0.0
+  flutter_local_notifications: ^22.3.0
+  flutter_localizations:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/retrait.jpeg
+    - assets/images/depot.jpeg
+  fonts:
+    - family: TestSöhne
+      fonts:
+        - asset: assets/fonts/TestSöhne-Leicht.otf
+          weight: 300
+        - asset: assets/fonts/TestSöhne-Buch.otf
+          weight: 400
+        - asset: assets/fonts/TestSöhne-Kräftig.otf
+          weight: 600
+        - asset: assets/fonts/TestSöhne-Fett.otf
+          weight: 700
