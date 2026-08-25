@@ -1,4 +1,4 @@
-// lib/model/transaction_item.dart
+
 import 'package:intl/intl.dart';
 
 enum TransactionType { credit, debit, envoi, reception, depot, retrait, unknown }
@@ -68,19 +68,21 @@ class TransactionItem {
 
   factory TransactionItem.fromApi(Map<String, dynamic> json) => TransactionItem.fromJson(json);
 
+
+
   static String _mapTypeToLabel(int typeId, [Map<String, dynamic>? json]) {
     if (json != null && json['libelle'] != null) return json['libelle'].toString();
     switch (typeId) {
       case 1:
-        return 'Envoi';
+        return 'tx_type_envoi';
       case 2:
-        return 'Réception';
+        return 'tx_type_reception';
       case 3:
-        return 'Dépôt';
+        return 'tx_type_depot';
       case 4:
-        return 'Retrait';
+        return 'tx_type_retrait';
       default:
-        return 'Opération';
+        return 'tx_type_operation';
     }
   }
 

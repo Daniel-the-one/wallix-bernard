@@ -1,4 +1,4 @@
-// lib/model/home/infos_accueil.dart
+
 import '../transaction_item.dart';
 
 class InfosAccueil {

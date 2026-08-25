@@ -1,6 +1,7 @@
-// lib/widgets/settings_tile.dart
+
 import 'package:flutter/material.dart';
 import '../model/settings_item.dart';
+import 't_text.dart';
 
 class SettingsTile extends StatelessWidget {
   final SettingsItemModel item;
@@ -14,7 +15,7 @@ class SettingsTile extends StatelessWidget {
     final contentColor = isDestructive ? Colors.red : Colors.black87;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8), // ✅ Espace entre chaque élément
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -47,18 +48,18 @@ class SettingsTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item.title,
+                    TText(
+                      item.titleKey,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                         color: contentColor,
                       ),
                     ),
-                    if (item.subtitle != null) ...[
+                    if (item.subtitleKey != null) ...[
                       const SizedBox(height: 2),
-                      Text(
-                        item.subtitle!,
+                      TText(
+                        item.subtitleKey!,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade500,

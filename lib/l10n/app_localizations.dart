@@ -1,4 +1,4 @@
-// lib/l10n/app_localizations.dart
+
 import 'package:flutter/material.dart';
 import 'app_localizations_fr.dart';
 import 'app_localizations_en.dart';

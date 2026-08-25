@@ -1,8 +1,9 @@
-// lib/widgets/language_bottom_sheet.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/locale_provider.dart';
 import '../theme/app_colors.dart';
+import 't_text.dart';
 
 class LanguageBottomSheet extends StatelessWidget {
   const LanguageBottomSheet({super.key});
@@ -41,8 +42,8 @@ class LanguageBottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Sélectionner la langue',
+          const TText(
+            'language_select_title',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

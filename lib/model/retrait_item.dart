@@ -1,10 +1,11 @@
-// lib/model/retrait_item.dart
+
+import '../api/api_status.dart';
 
 enum RetraitStatus { initialise, accepte, refuse, annule, unknown }
 
 class RetraitItem {
   final String id;
-  final String keyRetrait; // key_retraitP ou r_identifiant
+  final String keyRetrait;
   final String clientName;
   final String clientPhone;
   final double amount;
@@ -69,21 +70,26 @@ class RetraitItem {
         return RetraitStatus.annule;
       case 0:
         return RetraitStatus.initialise;
+
+
       default:
-        return RetraitStatus.initialise;
+        return RetraitStatus.unknown;
     }
   }
+
 
   static String _mapToLabel(int etat) {
     switch (etat) {
       case 1:
-        return 'Accepté';
+        return 'status_accepted';
       case 2:
-        return 'Refusé';
+        return 'status_refused';
       case 3:
-        return 'Annulé';
+        return 'status_cancelled';
+      case 0:
+        return 'status_pending';
       default:
-        return 'En attente';
+        return 'status_unknown';
     }
   }
 
@@ -145,5 +151,5 @@ class RetraitListResponse {
     );
   }
 
-  bool get isSuccess => status == 'success';
+  bool get isSuccess => ApiStatus.isSuccess(status);
 }

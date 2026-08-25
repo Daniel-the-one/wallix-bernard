@@ -1,7 +1,8 @@
-// lib/screens/onboarding_screen.dart
+
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../model/onboarding_data.dart';
+import '../widgets/t_text.dart';
 import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -74,8 +75,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       children: [
                         const SizedBox(height: 30),
 
-                        Text(
-                          page.title,
+                        TText(
+                          page.titleKey,
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 28,
@@ -86,8 +87,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         const SizedBox(height: 12),
 
-                        Text(
-                          page.description,
+                        TText(
+                          page.descriptionKey,
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
@@ -123,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // Points indicateurs
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -145,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             const SizedBox(height: 16),
 
-            // Ligne du bas
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24),
               child: Row(
@@ -161,8 +162,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Text(
-                              'Skip',
+                            child: const TText(
+                              'skip',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 14,
@@ -214,8 +215,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               color: AppColors.primaryGreen,
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Text(
-                              'SUIVANT',
+                            child: const TText(
+                              'next',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,

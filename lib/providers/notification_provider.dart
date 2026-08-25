@@ -1,4 +1,4 @@
-// lib/providers/notification_provider.dart
+
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../model/notification_model.dart';

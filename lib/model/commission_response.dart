@@ -1,4 +1,4 @@
-// lib/model/commission_response.dart
+
 
 class CommissionResponse {
   final double totalGains;

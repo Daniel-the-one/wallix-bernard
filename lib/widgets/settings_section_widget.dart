@@ -1,7 +1,8 @@
-// lib/widgets/settings_section_widget.dart
+
 import 'package:flutter/material.dart';
 import '../model/settings_item.dart';
 import 'settings_tile.dart';
+import 't_text.dart';
 
 class SettingsSectionWidget extends StatelessWidget {
   final SettingsSectionModel section;
@@ -20,8 +21,8 @@ class SettingsSectionWidget extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 12),
-          child: Text(
-            section.title,
+          child: TText(
+            section.titleKey,
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,

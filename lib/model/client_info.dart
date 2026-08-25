@@ -1,4 +1,4 @@
-// lib/model/client_info.dart
+
 
 class ClientInfo {
   final String clientNom;

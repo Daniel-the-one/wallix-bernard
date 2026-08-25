@@ -1,4 +1,4 @@
-// lib/theme/app_text_styles.dart
+
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
@@ -21,7 +21,7 @@ class AppTextStyles {
     color: Colors.black,
   );
 
-  // Styles supplémentaires pour login et onboarding
+
   static const TextStyle heading = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,

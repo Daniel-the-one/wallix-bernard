@@ -1,7 +1,7 @@
-// lib/services/amount_formatter.dart
+
 
 class AmountFormatter {
-  /// Formate un montant en devise, ex: 185529.98 -> "185 529,98"
+
   static String format(double amount) {
     final String fixed = amount.toStringAsFixed(2);
     final parts = fixed.split('.');

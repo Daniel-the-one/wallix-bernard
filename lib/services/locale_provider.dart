@@ -1,4 +1,4 @@
-// lib/services/locale_provider.dart
+
 import 'package:flutter/material.dart';
 import '../data/shared_prefs_helper.dart';
 

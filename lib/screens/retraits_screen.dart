@@ -1,9 +1,10 @@
-// lib/screens/retraits_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../model/retrait_item.dart';
-import '../services/transaction_service.dart';
+import '../providers/transaction_provider.dart';
 import '../services/amount_formatter.dart';
 import '../widgets/t_text.dart';
 
@@ -15,16 +16,19 @@ class RetraitsScreen extends StatefulWidget {
 }
 
 class _RetraitsScreenState extends State<RetraitsScreen> {
-  final TransactionService _transactionService = TransactionService();
   final TextEditingController _searchController = TextEditingController();
-  List<RetraitItem> _retraits = [];
-  bool _isLoading = false;
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchRetraits();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+      final provider = context.read<TransactionProvider>();
+      if (provider.retraits.isEmpty) {
+        provider.fetchRetraits();
+      }
+    });
   }
 
   @override
@@ -33,26 +37,19 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchRetraits() async {
-    setState(() => _isLoading = true);
-    try {
-      final list = await _transactionService.listRetraits();
-      setState(() {
-        _retraits = list;
-      });
-    } catch (e) {
-      debugPrint('Error fetching retraits: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+  Future<void> _refreshRetraits() async {
+    await context.read<TransactionProvider>().fetchRetraits();
   }
 
-  Future<void> _cancelRetrait(RetraitItem item) async {
+  void _cancelRetrait(RetraitItem item) {
     final TextEditingController pinController = TextEditingController();
+
+    final transactionProvider = context.read<TransactionProvider>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const TText('cancel_op', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
@@ -68,7 +65,7 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
               maxLength: 4,
               decoration: InputDecoration(
                 counterText: '',
-                hintText: 'Code PIN',
+                hintText: TText.of(context).translate('pin_code'),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -76,27 +73,27 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const TText('cancel', style: TextStyle(color: Colors.black54)),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              final res = await _transactionService.cancelRetrait(
+              Navigator.pop(dialogContext);
+              final res = await transactionProvider.cancelRetrait(
                 keyRetraitP: item.keyRetrait,
                 codeSecurite: pinController.text,
               );
-              if (mounted) {
-                if (res.isSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Retrait annulé avec succès'), backgroundColor: AppColors.primaryGreen),
-                  );
-                  _fetchRetraits();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(res.message ?? 'échec de l\'annulation'), backgroundColor: Colors.red),
-                  );
-                }
+              if (!mounted) return;
+              if (res.isSuccess) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: TText('retrait_cancelled'), backgroundColor: AppColors.primaryGreen),
+                );
+
+                await transactionProvider.fetchAllData();
+              } else {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(content: TText('cancel_failed'), backgroundColor: Colors.red),
+                );
               }
             },
             child: const TText('confirm', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
@@ -108,7 +105,11 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredList = _retraits.where((r) {
+    final transactionProvider = context.watch<TransactionProvider>();
+    final List<RetraitItem> retraits = transactionProvider.retraits;
+    final bool isLoading = transactionProvider.isLoading;
+
+    final filteredList = retraits.where((r) {
       final query = _searchQuery.toLowerCase();
       return r.clientName.toLowerCase().contains(query) ||
           r.clientPhone.contains(query) ||
@@ -136,7 +137,7 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: Colors.black, size: 24),
-            onPressed: _fetchRetraits,
+            onPressed: _refreshRetraits,
           ),
         ],
       ),
@@ -145,24 +146,26 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
           _buildSearchBar(),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: _fetchRetraits,
+              onRefresh: _refreshRetraits,
               color: AppColors.primaryGreen,
-              child: _isLoading && _retraits.isEmpty
+              child: isLoading && retraits.isEmpty
                   ? const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
-                  : filteredList.isEmpty && _retraits.isNotEmpty
+                  : filteredList.isEmpty
                       ? ListView(
                           children: const [
-                            SizedBox(height: 100),
-                            Center(child: Text('Aucun retrait trouvé')),
+                            SizedBox(height: 120),
+                            Center(
+                              child: TText(
+                                'retraits_empty',
+                                style: TextStyle(color: Colors.black45, fontSize: 14),
+                              ),
+                            ),
                           ],
                         )
                       : ListView(
                           padding: const EdgeInsets.all(16),
                           children: [
-                            if (filteredList.isNotEmpty)
-                              ...filteredList.map(_buildRetraitTile)
-                            else
-                              ..._buildDefaultRetraitItems(),
+                            ...filteredList.map(_buildRetraitTile),
                             const SizedBox(height: 40),
                           ],
                         ),
@@ -184,7 +187,7 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
         controller: _searchController,
         onChanged: (v) => setState(() => _searchQuery = v),
         decoration: InputDecoration(
-          hintText: 'Rechercher un client par nom ou numéro',
+          hintText: TText.of(context).translate('retrait_search_hint'),
           hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
           prefixIcon: Icon(Icons.search, color: Colors.grey.shade400, size: 22),
           border: InputBorder.none,
@@ -194,123 +197,24 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
     );
   }
 
-  List<Widget> _buildDefaultRetraitItems() {
-    final List<Map<String, String>> defaultRetraits = [
-      {'name': 'Bernard', 'amount': '700 XOF', 'date': '10/08/2026 à 15:44', 'status': 'Accepté'},
-      {'name': 'Bernard', 'amount': '3 000 XOF', 'date': '10/08/2026 à 12:08', 'status': 'Accepté'},
-      {'name': 'Bernard', 'amount': '5 000 XOF', 'date': '10/08/2026 à 11:47', 'status': 'Accepté'},
-      {'name': 'Ditoma', 'amount': '200 XOF', 'date': '07/08/2026 à 15:20', 'status': 'Accepté'},
-      {'name': 'Ditoma', 'amount': '1 200 XOF', 'date': '07/08/2026 à 09:46', 'status': 'Accepté'},
-      {'name': 'Ditoma', 'amount': '5 000 XOF', 'date': '07/08/2026 à 09:31', 'status': 'Accepté'},
-      {'name': 'Ditoma', 'amount': '500 XOF', 'date': '07/08/2026 à 09:27', 'status': 'Accepté'},
-    ];
-
-    return defaultRetraits.map((item) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(Icons.person_outline, color: Colors.black54, size: 26),
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(1.5),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check_circle,
-                      color: AppColors.primaryGreen,
-                      size: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        item['name']!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        item['status']!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryGreen,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Text(
-                        'Montant : ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      Text(
-                        item['amount']!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryGreen,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item['date']!,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.black45,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
+  String _statusLabel(RetraitStatus status) {
+    switch (status) {
+      case RetraitStatus.accepte:
+        return TText.of(context).translate('status_accepte');
+      case RetraitStatus.refuse:
+        return TText.of(context).translate('status_refuse');
+      case RetraitStatus.annule:
+        return TText.of(context).translate('status_annule');
+      case RetraitStatus.initialise:
+        return TText.of(context).translate('status_initialise');
+      case RetraitStatus.unknown:
+        return TText.of(context).translate('status_unknown');
+    }
   }
 
   Widget _buildRetraitTile(RetraitItem item) {
     final String formattedDate = DateFormat("dd/MM/yyyy 'à' HH:mm").format(item.date);
-    final String statusText = item.statusLabel.isNotEmpty ? item.statusLabel : (item.status == RetraitStatus.accepte ? 'Accepté' : item.status.name);
+    final String statusText = _statusLabel(item.status);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -382,9 +286,9 @@ class _RetraitsScreenState extends State<RetraitsScreen> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Text(
-                      'Montant : ',
-                      style: TextStyle(
+                    TText(
+                      'amount_prefix',
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.black54,
                       ),

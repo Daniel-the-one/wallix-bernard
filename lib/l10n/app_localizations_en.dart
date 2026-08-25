@@ -1,7 +1,7 @@
-// lib/l10n/app_localizations_en.dart
+
 
 final Map<String, String> appLocalizationsEn = {
-  // Auth & Login
+
   'login_title': 'Login',
   'login_desc': 'Log in to your agent space.',
   'phone_label': 'Phone Number',
@@ -9,22 +9,27 @@ final Map<String, String> appLocalizationsEn = {
   'forgot_pin': 'Forgot code?',
   'login_btn': 'Login',
   'welcome_back': 'Welcome back',
+  'welcome_back_name': 'Welcome back, {name}',
   'enter_pin': 'Enter your PIN code to continue',
+  'incorrect_pin': 'Incorrect code, please try again.',
+  'too_many_attempts': 'Too many attempts. Try again in {seconds}s.',
   'logout': 'Logout',
   'logout_title': 'Logout',
   'logout_desc': 'Do you really want to log out?',
   'cancel': 'Cancel',
   'confirm': 'Confirm',
 
-  // Home & Balances
+
   'home_solde': 'Balance',
+  'home_welcome': 'Welcome {name}',
   'home_depot': 'Deposit',
+  'home_transfert': 'Transfer',
   'home_retrait': 'Withdrawal',
   'home_history': 'Transaction History',
   'view_all': 'View all',
   'total_depots': 'Total deposits',
 
-  // Operations & QR
+
   'scan_title': 'Scan QR code',
   'scan_desc': 'Place the client\'s QR Code in the frame',
   'conf_title': 'Confirmation',
@@ -36,11 +41,28 @@ final Map<String, String> appLocalizationsEn = {
   'depot_success': 'Deposit success',
   'retrait_success': 'Withdrawal success',
   'client_label': 'Client',
+  'client_name': 'Client: {name}',
   'reference_label': 'Reference',
   'datetime_label': 'Date and time',
   'commission_label': 'Commission',
+  'transaction_details': 'Transaction details',
+  'close': 'Close',
+  'retrait_pending_info': 'The client has 5 minutes to confirm the withdrawal via their app.',
+  'depot_physique': 'Physical deposit',
 
-  // History & Filters
+
+  'back': 'Back',
+  'error': 'Error',
+  'error_fill_fields': 'Please fill in all fields',
+  'error_invalid_amount': 'Invalid amount',
+  'error_pin_required': 'Security code required',
+  'error_pin_length': 'The PIN code must contain at least 4 digits',
+  'amount_prefix': 'Amount: ',
+  'pin_code': 'PIN code',
+  'status_label': 'Status',
+  'amount_total': 'Total amount',
+
+
   'history_title': 'History',
   'search_hint': 'Search a transaction',
   'filter_all': 'All',
@@ -50,25 +72,80 @@ final Map<String, String> appLocalizationsEn = {
   'date_today': 'Today',
   'date_yesterday': 'Yesterday',
 
-  // Commissions
+
+  'transfert_title': 'Money transfer',
+  'transfert_receiver': 'Recipient number',
+  'transfert_amount': 'Amount to send',
+  'transfert_fees': 'Transaction fees:',
+  'transfert_confirm_btn': 'Confirm transfer',
+  'transfert_success': 'Transfer successful!',
+  'transfert_success_desc': '{amount} sent successfully.',
+  'transfert_error': 'Transfer failed',
+
+
+  'register_client_title': 'Register a client',
+  'register_client_desc': 'Create a Wallix client account by filling in their information.',
+  'lastname_label': 'Last name',
+  'firstname_label': 'First name',
+  'register_lastname_hint': 'Client\'s last name',
+  'register_firstname_hint': 'Client\'s first name',
+  'register_pin_label': 'Client PIN code',
+  'register_pin_hint': 'Security code (4 digits)',
+  'register_client_btn': 'Create account',
+  'register_success_title': 'Account created!',
+  'register_success_desc': '{name}\'s account has been created successfully.',
+  'register_error': 'Failed to create the account',
+
+
+  'forgot_desc': 'Enter your phone number. Our team will process your reset request.',
+  'forgot_submit': 'Send request',
+  'forgot_success_title': 'Request sent',
+  'forgot_success_desc': 'Your request has been recorded and will be processed by our team as soon as possible.',
+  'forgot_back_login': 'Back to login',
+  'forgot_error': 'Failed to send the request',
+  'country_picker_title': 'Choose a country',
+  'country_picker_search': 'Search a country',
+
+
   'comm_title': 'My Commissions',
   'comm_total': 'Total earnings',
   'comm_today': 'Today\'s earnings',
   'comm_list': 'Commission details',
   'comm_empty': 'No commissions for this period',
+  'history_empty': 'No transactions yet',
+  'home_history_empty': 'No recent transactions',
 
-  // Retraits
+
   'retrait_list_title': 'Withdrawal requests',
   'retraits_title': 'Withdrawals list',
   'retrait_search_hint': 'Search client by name or phone',
+  'retraits_empty': 'No withdrawal found',
+  'retrait_cancelled': 'Withdrawal cancelled successfully',
+  'cancel_failed': 'Cancellation failed',
   'status_initialise': 'Pending',
   'status_accepte': 'Accepted',
   'status_refuse': 'Refused',
+  'status_unknown': 'Unknown',
   'status_annule': 'Cancelled',
   'cancel_op': 'Cancel operation',
   'cancel_confirm': 'Do you want to cancel this withdrawal?',
 
-  // Settings & Profile & Support
+
+  'settings_pin_subtitle': 'Change your PIN code',
+  'change_pin_success': 'Security code changed successfully!',
+  'pin_mismatch': 'The new PIN codes do not match',
+  'current_pin_label': 'Current security code',
+  'new_pin_label': 'New security code',
+  'confirm_new_pin_label': 'Confirm new code',
+  'enter_code_hint': 'Enter the code',
+
+
+  'notifications_title': 'Notifications',
+  'delete_all': 'Delete all',
+  'delete_all_confirm': 'Do you want to delete all your notifications?',
+  'delete': 'Delete',
+
+
   'profile_title': 'Settings',
   'profile_verify': 'Verified',
   'profile_not_verify': 'Not Verified',
@@ -78,4 +155,67 @@ final Map<String, String> appLocalizationsEn = {
   'settings_pin': 'Change security code',
   'settings_support': 'Customer service',
   'settings_faq': 'FAQ',
+
+
+  'settings_section_account': 'Account details',
+  'settings_section_help': 'Help and support',
+  'settings_withdrawals_title': 'Withdrawals list',
+  'settings_withdrawals_subtitle': 'View your withdrawals',
+  'settings_commissions_title': 'Commissions',
+  'settings_commissions_subtitle': 'View your earnings',
+  'settings_change_pin_title': 'Change security code',
+  'settings_change_pin_subtitle': 'Update your PIN code',
+  'settings_change_language_title': 'Change language',
+  'settings_change_language_subtitle': 'Select a language',
+  'settings_faq_title': 'FAQ',
+  'settings_faq_subtitle': 'Frequently asked questions',
+  'settings_support_title': 'Customer service',
+  'settings_support_subtitle': 'Contact us',
+  'settings_logout_title': 'Log out',
+  'settings_logout_subtitle': 'Sign out of your account',
+
+
+  'splash_tagline': 'Wallix Agent is the app that supports agents in managing day-to-day money transfers, securely and effortlessly.',
+  'onboarding_1_title': 'Instant transfer\nmanagement',
+  'onboarding_1_desc': 'Record, validate and track every\ncustomer transaction in real time.',
+  'onboarding_2_title': 'Secure and\ntrusted',
+  'onboarding_2_desc': 'Every operation is protected to\nkeep your customers\' trust.',
+  'skip': 'Skip',
+  'next': 'NEXT',
+  'logout_confirm': 'Are you sure you want to log out?',
+  'language_select_title': 'Select language',
+  'notifications_empty': 'No notifications yet',
+  'support_intro': 'Our team is here to support you every day.',
+  'client_verified': 'Verified client',
+  'country_search_hint': 'Search a country',
+  'generic_error': 'An error occurred. Please try again.',
+
+
+  'faq_q_deposit': 'How do I make a deposit?',
+  'faq_a_deposit': 'To make a deposit, tap the "Deposit" option from the home screen or scan the QR code provided by the client, then enter the desired amount.',
+  'faq_q_cancel_retrait': 'How do I cancel a withdrawal?',
+  'faq_a_cancel_retrait': 'As long as the client has not validated the withdrawal, you can cancel it from the withdrawals list or contact customer service right away.',
+  'faq_q_commissions': 'When are my commissions paid?',
+  'faq_a_commissions': 'Your commissions are calculated automatically for each transaction and credited directly to your agent balance.',
+  'faq_q_client_no_request': 'The client does not receive the withdrawal request?',
+  'faq_a_client_no_request': 'Check the client\'s phone network connection or try again by generating a new withdrawal QR code.',
+  'faq_q_change_pin': 'How do I change my PIN code?',
+  'faq_a_change_pin': 'Go to Settings > Change security code, then enter your old code and your new PIN.',
+
+
+  'login_phone_required': 'Phone number is required',
+  'login_phone_invalid': 'Invalid phone number',
+  'login_phone_digits_only': 'Invalid number (digits only)',
+  'login_phone_length_error': 'The number must contain exactly {length} digits',
+  'login_phone_invalid_prefix': 'Invalid phone number.',
+  'login_code_required': 'Code is required',
+  'login_code_length_error': 'The code must contain {length} digits',
+  'login_error': 'Connection error',
+
+
+  'tx_type_envoi': 'Send',
+  'tx_type_reception': 'Receive',
+  'tx_type_depot': 'Deposit',
+  'tx_type_retrait': 'Withdrawal',
+  'tx_type_operation': 'Operation',
 };

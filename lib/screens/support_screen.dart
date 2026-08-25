@@ -1,4 +1,4 @@
-// lib/screens/support_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/t_text.dart';
@@ -40,8 +40,8 @@ class SupportScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Notre équipe est à votre disposition pour vous accompagner au quotidien.',
+              const TText(
+                'support_intro',
                 style: TextStyle(
                   fontSize: 15,
                   color: Colors.black54,

@@ -1,4 +1,4 @@
-// lib/api/api_service.dart
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -15,17 +15,17 @@ class ApiService {
 
   String get baseUrl => ApiConfig.baseUrl;
 
-  /// Headers avec Bearer Token pour les requêtes authentifiées
+
   Map<String, String> getAuthHeaders() {
     return ApiDefault.getDefaultHeaders();
   }
 
-  /// Requête POST générique
+
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) async {
     return ApiDefault.postData(endpoint, body);
   }
 
-  /// Requête GET générique
+
   Future<Map<String, dynamic>> get(String endpoint, [Map<String, dynamic>? queryParams]) async {
     Uri uri = Uri.parse('$baseUrl/$endpoint');
     if (queryParams != null && queryParams.isNotEmpty) {
@@ -48,13 +48,13 @@ class ApiService {
     }
   }
 
-  /// Récupérer le token d'accès
+
   String? getAccessToken() {
     final token = _prefs.getString('access_token');
     return token.isNotEmpty ? token : _prefs.getString('u_identifiant');
   }
 
-  /// Sauvegarder le token d'accès
+
   Future<void> saveAccessToken(String token) async {
     await _prefs.saveString('access_token', token);
     await _prefs.saveString('u_identifiant', token);

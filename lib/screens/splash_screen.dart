@@ -1,7 +1,8 @@
-// lib/screens/splash_screen.dart
+
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../data/shared_prefs_helper.dart';
+import '../widgets/t_text.dart';
 import 'onboarding_screen.dart';
 import 'access_code_screen.dart';
 import 'login_screen.dart';
@@ -177,8 +178,8 @@ class _SplashScreenState extends State<SplashScreen>
                         color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
-                    child: const Text(
-                      'Wallix Agent est l\'application qui accompagne les agents dans la gestion quotidienne des transferts d\'argent, en toute sécurité et en toute simplicité.',
+                    child: const TText(
+                      'splash_tagline',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.textSecondary,

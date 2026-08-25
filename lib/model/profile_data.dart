@@ -1,4 +1,4 @@
-// lib/model/profile_data.dart
+
 
 class ProfileData {
   final String agentCode;
@@ -29,5 +29,4 @@ class ProfileData {
   }
 }
 
-// Type alias pour compatibilité
 typedef ProfileModel = ProfileData;

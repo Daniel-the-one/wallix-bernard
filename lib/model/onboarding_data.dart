@@ -1,11 +1,13 @@
+
+
 class OnboardingPageData {
-  final String title;
-  final String description;
+  final String titleKey;
+  final String descriptionKey;
   final String imagePlaceholder;
 
   const OnboardingPageData({
-    required this.title,
-    required this.description,
+    required this.titleKey,
+    required this.descriptionKey,
     required this.imagePlaceholder,
   });
 }
@@ -13,16 +15,14 @@ class OnboardingPageData {
 class OnboardingData {
   static const List<OnboardingPageData> pages = [
     OnboardingPageData(
-      title: 'Gestion instantanée\ndes transferts',
-      description:
-          'Enregistrez, validez et suivez chaque\ntransaction de vos clients en temps réel.',
-      imagePlaceholder: 'assets/images/onboarding_1.png', // <- METS TON IMAGE ICI
+      titleKey: 'onboarding_1_title',
+      descriptionKey: 'onboarding_1_desc',
+      imagePlaceholder: 'assets/images/onboarding_1.png',
     ),
     OnboardingPageData(
-      title: 'Sécurisé et\nde confiance',
-      description:
-          'Chaque opération est protégée pour\ngarantir la confiance de vos clients.',
-      imagePlaceholder: 'assets/images/onboarding_2.png', // <- METS TON IMAGE ICI
+      titleKey: 'onboarding_2_title',
+      descriptionKey: 'onboarding_2_desc',
+      imagePlaceholder: 'assets/images/onboarding_2.png',
     ),
   ];
 }

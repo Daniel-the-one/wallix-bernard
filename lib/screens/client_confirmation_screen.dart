@@ -1,13 +1,15 @@
-// lib/screens/client_confirmation_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../model/client_info.dart';
-import '../services/transaction_service.dart';
 import '../widgets/t_text.dart';
+import '../providers/transaction_provider.dart';
+import '../providers/home_provider.dart';
 import 'qr_scanner_screen.dart';
 import 'main_navigation_screen.dart';
-
 class ClientConfirmationScreen extends StatefulWidget {
   final String clientCode;
   final ClientInfo? clientInfo;
@@ -27,7 +29,6 @@ class ClientConfirmationScreen extends StatefulWidget {
 class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _pinController = TextEditingController();
-  final TransactionService _transactionService = TransactionService();
   String? _errorMessage;
   bool _isLoading = false;
   bool _isSuccess = false;
@@ -47,11 +48,11 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
     final pin = _pinController.text;
 
     if (amount <= 0) {
-      setState(() => _errorMessage = 'Montant invalide');
+      setState(() => _errorMessage = TText.of(context).translate('error_invalid_amount'));
       return;
     }
     if (pin.isEmpty) {
-      setState(() => _errorMessage = 'Code de sécurité requis');
+      setState(() => _errorMessage = TText.of(context).translate('error_pin_required'));
       return;
     }
 
@@ -63,65 +64,83 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
 
     try {
       if (widget.type == OperationType.depot) {
-        final result = await _transactionService.depot(
+        final result = await context.read<TransactionProvider>().depot(
           clientToken: clientToken,
           amount: amount,
           codeSecurite: pin,
         );
+
+        if (!mounted) return;
 
         if (result.isSuccess) {
           setState(() {
             _isSuccess = true;
             _transactionDetails = {
               'amount': amount,
-              'clientName': widget.clientInfo?.clientNom ?? (widget.clientCode.length > 5 ? widget.clientCode : 'Client'),
-              'reference': result.reference ?? result.keyDepot ?? '__QjFwm9ObcTOvw',
-              'date': '20/08/2026 à 20:19',
-              'commission': '${result.commission ?? 8.50} XOF',
+              'clientName': widget.clientInfo?.clientNom ?? widget.clientCode,
+
+              'reference': result.reference ?? result.keyDepot ?? '—',
+              'date': _formatNow(),
+              'commission': result.commission != null ? '${result.commission} XOF' : '—',
             };
           });
+
+          context.read<TransactionProvider>().fetchAllData();
+          context.read<HomeProvider>().fetchHomeData();
         } else {
           setState(() {
             if (result.message == 'code_securite_error') {
-              _errorMessage = 'Code de sécurité incorrect';
+              _errorMessage = TText.of(context).translate('op_error_pin');
             } else {
-              _errorMessage = result.message ?? 'Erreur lors de l\'opération';
+              _errorMessage = result.message ?? TText.of(context).translate('error');
             }
           });
         }
       } else {
-        final result = await _transactionService.initRetrait(
+        final result = await context.read<TransactionProvider>().initRetrait(
           clientToken: clientToken,
           amount: amount,
           codeSecurite: pin,
         );
+
+        if (!mounted) return;
 
         if (result.isSuccess) {
           setState(() {
             _isSuccess = true;
             _transactionDetails = {
               'amount': amount,
-              'clientName': widget.clientInfo?.clientNom ?? (widget.clientCode.length > 5 ? widget.clientCode : 'Client'),
-              'reference': result.reference ?? result.keyRetraitP ?? '__QjFwm9ObcTOvw',
-              'date': '20/08/2026 à 20:19',
-              'commission': '${result.commission ?? 2.17} XOF',
+              'clientName': widget.clientInfo?.clientNom ?? widget.clientCode,
+              'reference': result.reference ?? result.keyRetraitP ?? '—',
+              'date': _formatNow(),
+              'commission': result.commission != null ? '${result.commission} XOF' : '—',
             };
           });
+
+          context.read<TransactionProvider>().fetchAllData();
+          context.read<HomeProvider>().fetchHomeData();
         } else {
           setState(() {
             if (result.message == 'code_securite_error') {
-              _errorMessage = 'Code de sécurité incorrect';
+              _errorMessage = TText.of(context).translate('op_error_pin');
             } else {
-              _errorMessage = result.message ?? 'Erreur lors de l\'opération';
+              _errorMessage = result.message ?? TText.of(context).translate('error');
             }
           });
         }
       }
     } catch (e) {
-      setState(() => _errorMessage = 'Erreur: $e');
+      if (!mounted) return;
+      setState(() => _errorMessage = '${TText.of(context).translate('error')}: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+
+  String _formatNow() {
+    final locale = Localizations.localeOf(context).languageCode;
+    return DateFormat("dd/MM/yyyy 'à' HH:mm", locale).format(DateTime.now());
   }
 
   @override
@@ -226,7 +245,7 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
             maxLength: 4,
             decoration: InputDecoration(
               counterText: '',
-              hintText: 'Code PIN',
+              hintText: TText.of(context).translate('conf_pin'),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -320,10 +339,10 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
           const SizedBox(height: 12),
 
           if (!isDepot)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                'Le client a 5 minutes pour confirmer le retrait via son application.',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TText(
+                'retrait_pending_info',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -348,8 +367,8 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
 
           const Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              'Détails de la transaction',
+            child: TText(
+              'transaction_details',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -398,8 +417,9 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
                   ],
                 ),
                 const SizedBox(width: 16),
-                Text(
-                  'Client : ${_transactionDetails?['clientName'] ?? "Ditoma"}',
+                TText(
+                  'client_name',
+                  args: {'name': _transactionDetails?['clientName'] ?? ''},
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -412,11 +432,11 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
 
           const SizedBox(height: 20),
 
-          _buildDetailRow('Référence', _transactionDetails?['reference'] ?? '__QjFwm9ObcTOvw'),
+          _buildDetailRow('reference_label', _transactionDetails?['reference'] ?? '__QjFwm9ObcTOvw'),
           const SizedBox(height: 14),
-          _buildDetailRow('Date et heure', _transactionDetails?['date'] ?? '20/08/2026 à 20:19'),
+          _buildDetailRow('datetime_label', _transactionDetails?['date'] ?? '20/08/2026 à 20:19'),
           const SizedBox(height: 14),
-          _buildDetailRow('Commission', _transactionDetails?['commission'] ?? '8.50 XOF'),
+          _buildDetailRow('commission_label', _transactionDetails?['commission'] ?? '8.50 XOF'),
 
           const Spacer(),
 
@@ -437,8 +457,8 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
               ),
-              child: const Text(
-                'Fermer',
+              child: const TText(
+                'close',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -449,12 +469,12 @@ class _ClientConfirmationScreenState extends State<ClientConfirmationScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String labelKey, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
+        TText(
+          labelKey,
           style: const TextStyle(
             fontSize: 14,
             color: Colors.black45,

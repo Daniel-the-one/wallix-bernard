@@ -1,10 +1,11 @@
-// lib/screens/login_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../api/api_status.dart';
 import '../widgets/t_text.dart';
 import '../services/auth_service.dart';
 import '../data/shared_prefs_helper.dart';
@@ -22,8 +23,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   bool _isPasswordVisible = false;
+
   String _phoneError = '';
+  Map<String, String> _phoneErrorArgs = {};
   String _codeError = '';
+  Map<String, String> _codeErrorArgs = {};
   bool _isLoading = false;
   final SharedPrefsHelper _prefs = SharedPrefsHelper();
   bool _rememberMe = false;
@@ -162,8 +166,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Choisir un pays',
+                          const TText(
+                            'country_picker_title',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -180,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: 'Rechercher un pays',
+                          hintText: TText.of(context).translate('country_search_hint'),
                           prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -231,7 +235,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void _validatePhone(String phone) {
     if (phone.isEmpty) {
       setState(() {
-        _phoneError = 'Le numéro est obligatoire';
+        _phoneError = 'login_phone_required';
+        _phoneErrorArgs = {};
       });
       return;
     }
@@ -240,14 +245,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (cleanedPhone.isEmpty) {
       setState(() {
-        _phoneError = 'Numéro invalide';
+        _phoneError = 'login_phone_invalid';
+        _phoneErrorArgs = {};
       });
       return;
     }
 
     if (!RegExp(r'^[0-9]+$').hasMatch(cleanedPhone)) {
       setState(() {
-        _phoneError = 'Numéro invalide (chiffres uniquement)';
+        _phoneError = 'login_phone_digits_only';
+        _phoneErrorArgs = {};
       });
       return;
     }
@@ -255,31 +262,37 @@ class _LoginScreenState extends State<LoginScreen> {
     int maxLength = _getMaxLengthForCountry(_selectedCountry.countryCode);
     if (cleanedPhone.length != maxLength) {
       setState(() {
-        _phoneError = 'Le numéro doit contenir exactement $maxLength chiffres';
+        _phoneError = 'login_phone_length_error';
+        _phoneErrorArgs = {'length': '$maxLength'};
       });
       return;
     }
 
     if (!_isValidPrefix(cleanedPhone, _selectedCountry.countryCode)) {
       setState(() {
-        _phoneError = 'Numéro invalide.';
+        _phoneError = 'login_phone_invalid_prefix';
+        _phoneErrorArgs = {};
       });
       return;
     }
 
     setState(() {
       _phoneError = '';
+      _phoneErrorArgs = {};
     });
   }
 
   void _validateCode(String code) {
     setState(() {
       if (code.isEmpty) {
-        _codeError = 'Le code est obligatoire';
+        _codeError = 'login_code_required';
+        _codeErrorArgs = {};
       } else if (code.length < _codeLength) {
-        _codeError = 'Le code doit contenir $_codeLength chiffres';
+        _codeError = 'login_code_length_error';
+        _codeErrorArgs = {'length': '$_codeLength'};
       } else {
         _codeError = '';
+        _codeErrorArgs = {};
       }
     });
   }
@@ -303,8 +316,9 @@ class _LoginScreenState extends State<LoginScreen> {
       final authService = context.read<AuthService>();
       final result = await authService.login(cleanedPhone, enteredPin);
 
-      if (result['status'] == 'success') {
-        await _prefs.savePinCode(enteredPin);
+      if (ApiStatus.isSuccess(result['status'])) {
+
+
 
         if (_rememberMe) {
           await _prefs.saveBool('remember_me', true);
@@ -322,13 +336,16 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         setState(() {
           _isLoading = false;
-          _codeError = result['message'] ?? 'Erreur de connexion';
+
+          _codeError = result['message'] ?? TText.of(context).translate('login_error');
+          _codeErrorArgs = {};
         });
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _phoneError = 'Une erreur est survenue. Veuillez réessayer.';
+        _phoneError = 'generic_error';
+        _phoneErrorArgs = {};
       });
     }
   }
@@ -419,8 +436,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (_phoneError.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text(
+                    child: TText(
                       _phoneError,
+                      args: _phoneErrorArgs.isNotEmpty ? _phoneErrorArgs : null,
                       style: const TextStyle(color: Colors.red, fontSize: 12),
                     ),
                   ),
@@ -439,7 +457,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                   onChanged: _validateCode,
                   decoration: InputDecoration(
-                    hintText: 'Entrez votre code',
+                    hintText: TText.of(context).translate('enter_code_hint'),
                     counterText: '',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -461,8 +479,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (_codeError.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text(
+                    child: TText(
                       _codeError,
+                      args: _codeErrorArgs.isNotEmpty ? _codeErrorArgs : null,
                       style: const TextStyle(color: Colors.red, fontSize: 12),
                     ),
                   ),

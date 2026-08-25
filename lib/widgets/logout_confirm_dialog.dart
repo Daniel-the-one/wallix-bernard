@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 't_text.dart';
 
 class LogoutConfirmDialog extends StatelessWidget {
   final VoidCallback onConfirm;
@@ -18,7 +19,7 @@ class LogoutConfirmDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top Circle Icon
+
             Container(
               width: 64,
               height: 64,
@@ -34,9 +35,9 @@ class LogoutConfirmDialog extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Title
-            const Text(
-              'Déconnexion',
+
+            const TText(
+              'logout_title',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -45,9 +46,9 @@ class LogoutConfirmDialog extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // Subtitle
-            const Text(
-              'Êtes-vous sûr de vouloir vous déconnecter ?',
+
+            const TText(
+              'logout_confirm',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -56,7 +57,7 @@ class LogoutConfirmDialog extends StatelessWidget {
             ),
             const SizedBox(height: 28),
 
-            // Primary Red Button
+
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -73,8 +74,8 @@ class LogoutConfirmDialog extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: const Text(
-                  'Déconnexion',
+                child: const TText(
+                  'logout_title',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -84,11 +85,11 @@ class LogoutConfirmDialog extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Cancel Text Button
+
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Annuler',
+              child: const TText(
+                'cancel',
                 style: TextStyle(
                   color: Colors.black54,
                   fontSize: 15,

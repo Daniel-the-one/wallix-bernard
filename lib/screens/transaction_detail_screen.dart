@@ -1,4 +1,4 @@
-// lib/screens/transaction_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../model/transaction_item.dart';
@@ -41,7 +41,7 @@ class TransactionDetailScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
 
-              // Status Icon Badge
+
               Center(
                 child: Container(
                   width: 80,
@@ -62,7 +62,7 @@ class TransactionDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              Text(
+              TText(
                 item.title,
                 style: const TextStyle(
                   fontSize: 20,
@@ -84,7 +84,7 @@ class TransactionDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Client Card
+
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -127,7 +127,7 @@ class TransactionDetailScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.subtitle.isNotEmpty ? item.subtitle : 'Client',
+                          item.subtitle.isNotEmpty ? item.subtitle : TText.of(context).translate('client_label'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -135,9 +135,9 @@ class TransactionDetailScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Client vérifié',
-                          style: TextStyle(
+                        TText(
+                          'client_verified',
+                          style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.primaryGreen,
                             fontWeight: FontWeight.w600,
@@ -151,15 +151,15 @@ class TransactionDetailScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Detail Key/Values
-              _buildDetailRow('Référence', item.id.isNotEmpty ? item.id : item.keyDepot ?? 'N/A'),
+
+              _buildDetailRow(context, 'reference_label', item.id.isNotEmpty ? item.id : item.keyDepot ?? 'N/A'),
               const SizedBox(height: 14),
-              _buildDetailRow('Date et heure', formattedDate),
+              _buildDetailRow(context, 'datetime_label', formattedDate),
               const SizedBox(height: 14),
-              _buildDetailRow('Statut', item.status),
+              _buildDetailRow(context, 'status_label', item.status),
               if (item.montantTotal != null && item.montantTotal! > 0) ...[
                 const SizedBox(height: 14),
-                _buildDetailRow('Montant total', '${item.montantTotal} XOF'),
+                _buildDetailRow(context, 'amount_total', '${item.montantTotal} XOF'),
               ],
 
               const Spacer(),
@@ -175,8 +175,8 @@ class TransactionDetailScreen extends StatelessWidget {
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                   ),
-                  child: const Text(
-                    'Fermer',
+                  child: const TText(
+                    'close',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -189,12 +189,12 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String labelKey, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
+        TText(
+          labelKey,
           style: const TextStyle(
             fontSize: 14,
             color: Colors.black45,

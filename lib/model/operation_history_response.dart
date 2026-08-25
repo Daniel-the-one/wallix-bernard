@@ -1,4 +1,5 @@
-// lib/model/operation_history_response.dart
+
+import '../api/api_status.dart';
 import 'transaction_item.dart';
 
 class OperationHistoryResponse {
@@ -33,5 +34,5 @@ class OperationHistoryResponse {
     );
   }
 
-  bool get isSuccess => status == 'success';
+  bool get isSuccess => ApiStatus.isSuccess(status);
 }

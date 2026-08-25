@@ -1,4 +1,4 @@
-// lib/model/auth/user.dart
+
 
 class User {
   final String nom;

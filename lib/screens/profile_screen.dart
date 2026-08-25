@@ -1,4 +1,4 @@
-// lib/screens/profile_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
@@ -29,18 +29,19 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
   bool get wantKeepAlive => true;
 
   void _showLogoutDialog(BuildContext context) {
+
+    final authService = context.read<AuthService>();
     showDialog(
       context: context,
       builder: (dialogContext) => LogoutConfirmDialog(
         onConfirm: () async {
-          await context.read<AuthService>().logout();
-          if (mounted) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (route) => false,
-            );
-          }
+          await authService.logout();
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            this.context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
         },
       ),
     );

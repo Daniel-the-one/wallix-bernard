@@ -1,9 +1,11 @@
-// lib/screens/access_code_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
-import '../data/shared_prefs_helper.dart';
+import '../services/auth_service.dart';
 import '../widgets/logout_confirm_dialog.dart';
+import '../widgets/t_text.dart';
 import 'login_screen.dart';
 import 'main_navigation_screen.dart';
 
@@ -21,9 +23,28 @@ class _AccessCodeScreenState extends State<AccessCodeScreen> {
   String _errorMessage = '';
   bool _isLoading = false;
 
-  final SharedPrefsHelper _prefs = SharedPrefsHelper();
+
+
+
+  int _failedAttempts = 0;
+  DateTime? _lockUntil;
+
+  bool get _isLocked => _lockUntil != null && DateTime.now().isBefore(_lockUntil!);
+
+  int get _remainingLockSeconds =>
+      _lockUntil == null ? 0 : _lockUntil!.difference(DateTime.now()).inSeconds.clamp(1, 3600);
 
   void _submitCode(String code) {
+    if (_isLocked) {
+      setState(() {
+        _errorMessage = TText.of(context).translate(
+          'too_many_attempts',
+        ).replaceAll('{seconds}', '$_remainingLockSeconds');
+      });
+      _pinController.clear();
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -31,20 +52,32 @@ class _AccessCodeScreenState extends State<AccessCodeScreen> {
 
     Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
-      final bool isValid = _prefs.verifyPin(code);
+
+      final bool isValid = context.read<AuthService>().verifyPinLocal(code);
 
       setState(() {
         _isLoading = false;
       });
 
       if (isValid) {
+        _failedAttempts = 0;
+        _lockUntil = null;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
         );
       } else {
+        _failedAttempts++;
+        String message = TText.of(context).translate('incorrect_pin');
+        if (_failedAttempts >= 3) {
+          final int delaySeconds = 30 * (_failedAttempts - 2);
+          _lockUntil = DateTime.now().add(Duration(seconds: delaySeconds));
+          message = TText.of(context).translate(
+            'too_many_attempts',
+          ).replaceAll('{seconds}', '$delaySeconds');
+        }
         setState(() {
-          _errorMessage = 'Code incorrect, veuillez réessayer.';
+          _errorMessage = message;
         });
         _pinController.clear();
       }
@@ -56,7 +89,7 @@ class _AccessCodeScreenState extends State<AccessCodeScreen> {
       context: context,
       builder: (dialogContext) => LogoutConfirmDialog(
         onConfirm: () async {
-          await _prefs.clearAll();
+          await context.read<AuthService>().logout();
           if (mounted) {
             Navigator.pushAndRemoveUntil(
               context,
@@ -97,8 +130,8 @@ class _AccessCodeScreenState extends State<AccessCodeScreen> {
                       size: 18,
                       color: Colors.black54,
                     ),
-                    label: const Text(
-                      'Déconnexion',
+                    label: const TText(
+                      'logout',
                       style: TextStyle(
                         color: Colors.black54,
                         fontSize: 14,
@@ -130,8 +163,9 @@ class _AccessCodeScreenState extends State<AccessCodeScreen> {
               const SizedBox(height: 24),
 
               Center(
-                child: Text(
-                  'Bon retour, ${_prefs.getAgentName().isNotEmpty ? _prefs.getAgentName() : widget.agentName}',
+                child: TText(
+                  'welcome_back_name',
+                  args: {'name': context.watch<AuthService>().agentName?.isNotEmpty == true ? context.watch<AuthService>().agentName! : widget.agentName},
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 24,
@@ -144,8 +178,8 @@ class _AccessCodeScreenState extends State<AccessCodeScreen> {
               const SizedBox(height: 8),
 
               const Center(
-                child: Text(
-                  'Entrez votre code PIN pour continuer',
+                child: TText(
+                  'enter_pin',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,

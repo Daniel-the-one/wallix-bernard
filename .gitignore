@@ -45,3 +45,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# API secrets — never commit the real file
+lib/env/env.g.dart

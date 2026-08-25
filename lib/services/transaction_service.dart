@@ -1,7 +1,8 @@
-// lib/services/transaction_service.dart
+
 import 'package:flutter/foundation.dart';
 import '../api/api_config.dart';
 import '../api/api_default.dart';
+import '../api/api_status.dart';
 import '../data/shared_prefs_helper.dart';
 import '../model/transaction_item.dart';
 import '../model/transaction_result.dart';
@@ -17,8 +18,8 @@ class TransactionService {
 
   final SharedPrefsHelper _prefs = SharedPrefsHelper();
 
-  /// Récupère l'historique complet des opérations
-  /// Endpoint: agents/operations
+
+
   Future<List<TransactionItem>> transactionHistory() async {
     try {
       final response = await ApiDefault.postData(ApiConfig.agentOperations, {
@@ -35,14 +36,13 @@ class TransactionService {
     }
   }
 
-  /// Exécute un dépôt pour un client
-  /// Endpoint: agents/depot
+
+
   Future<TransactionResult> depot({
     required String clientToken,
     required double amount,
     required String codeSecurite,
   }) async {
-    debugPrint('DEPOT REQUEST: client=$clientToken, amount=$amount');
     try {
       final response = await ApiDefault.postData(ApiConfig.agentDepot, {
         'numero_compte': _prefs.getPhoneNumber(),
@@ -52,7 +52,7 @@ class TransactionService {
         'code_securite': codeSecurite,
       });
 
-      debugPrint('DEPOT RESPONSE: $response');
+      if (kDebugMode) debugPrint('DEPOT STATUS: ${response['status']}');
       return TransactionResult.fromJson(response);
     } catch (e) {
       debugPrint('DEPOT ERROR: $e');
@@ -63,21 +63,27 @@ class TransactionService {
     }
   }
 
-  /// Initialise un retrait
-  /// Endpoint: agents/init_retrait
+
+
+
+
+
   Future<TransactionResult> initRetrait({
     required String clientToken,
     required double amount,
     required String codeSecurite,
   }) async {
     try {
-      final response = await ApiDefault.postData(ApiConfig.agentInitRetrait, {
-        'numero_compte': _prefs.getPhoneNumber(),
-        'receiver_phone': clientToken,
-        'montant': amount,
-        'montant_total': amount,
-        'code_securite': codeSecurite,
-      });
+      final response = await ApiDefault.postData(
+        ApiConfig.agentInitRetrait,
+        {
+          'numero_compte': _prefs.getPhoneNumber(),
+          'receiver_phone': clientToken,
+          'montant': amount,
+          'montant_total': amount,
+          'code_securite': codeSecurite,
+        },
+      );
 
       return TransactionResult.fromJson(response);
     } catch (e) {
@@ -89,20 +95,69 @@ class TransactionService {
     }
   }
 
-  /// Annule une demande de retrait en attente
-  /// Endpoint: agents/cancel_retrait
+
+
+  Future<TransactionResult> sendMoney({
+    required String receiverPhone,
+    required double amount,
+    required double totalAmount,
+    required String codeSecurite,
+  }) async {
+    try {
+      final response = await ApiDefault.postData(ApiConfig.operationsSendMoney, {
+        'numero_compte': _prefs.getPhoneNumber(),
+        'receiver_phone': receiverPhone,
+        'montant': amount,
+        'montant_total': totalAmount,
+        'code_securite': codeSecurite,
+      });
+
+      return TransactionResult.fromJson(response);
+    } catch (e) {
+      debugPrint('TransactionService sendMoney error: $e');
+      return TransactionResult(
+        status: 'error',
+        message: 'Erreur lors de l\'envoi d\'argent : $e',
+      );
+    }
+  }
+
+
+
+  Future<double> getTransactionFrais({
+    required double amount,
+    required String receiverPhone,
+  }) async {
+    try {
+      final response = await ApiDefault.postData(ApiConfig.operationsGetFrais, {
+        'numero_compte': _prefs.getPhoneNumber(),
+        'amount': amount,
+        'receiver_phone': receiverPhone,
+      });
+
+      if (ApiStatus.isSuccess(response['status'])) {
+        return double.tryParse(response['frais']?.toString() ?? '0') ?? 0.0;
+      }
+      return 0.0;
+    } catch (e) {
+      debugPrint('TransactionService getTransactionFrais error: $e');
+      return 0.0;
+    }
+  }
+
+
+
   Future<SimpleResponse> cancelRetrait({
     required String keyRetraitP,
     required String codeSecurite,
   }) async {
-    debugPrint('CANCEL RETRAIT REQUEST: r_identifiant=$keyRetraitP');
     try {
       final response = await ApiDefault.postData(ApiConfig.agentCancelRetrait, {
         'r_identifiant': keyRetraitP,
         'code_securite': codeSecurite,
       });
 
-      debugPrint('CANCEL RETRAIT RESPONSE: $response');
+      if (kDebugMode) debugPrint('CANCEL RETRAIT STATUS: ${response['status']}');
       return SimpleResponse.fromJson(response);
     } catch (e) {
       debugPrint('CANCEL RETRAIT ERROR: $e');
@@ -113,15 +168,17 @@ class TransactionService {
     }
   }
 
-  /// Récupère l'ensemble des commissions de l'agent
-  /// Endpoint: agents/all_commission
+
+
+
+
   Future<CommissionResponse?> getCommissions() async {
-    debugPrint('COMMISSION REQUEST:');
     try {
-      final response = await ApiDefault.postData(ApiConfig.agentAllCommission, {
-        'to_identifiant': '',
-      });
-      debugPrint('COMMISSION RESPONSE: $response');
+      final response = await ApiDefault.postData(
+        ApiConfig.agentAllCommission,
+        {'to_identifiant': ''},
+      );
+      if (kDebugMode) debugPrint('COMMISSION STATUS: ${response['status']}');
       return CommissionResponse.fromJson(response);
     } catch (e) {
       debugPrint('COMMISSION ERROR: $e');
@@ -129,8 +186,8 @@ class TransactionService {
     }
   }
 
-  /// Récupère la liste des demandes et historiques de retrait
-  /// Endpoint: agents/all_retrait
+
+
   Future<List<RetraitItem>> listRetraits() async {
     try {
       final response = await ApiDefault.postData(ApiConfig.agentAllRetrait, {

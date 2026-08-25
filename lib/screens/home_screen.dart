@@ -1,10 +1,11 @@
-// lib/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/transaction_item.dart';
 import '../theme/app_colors.dart';
 import '../providers/home_provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/transaction_provider.dart';
 import '../widgets/t_text.dart';
 import 'qr_scanner_screen.dart';
 import 'notifications_screen.dart';
@@ -29,7 +30,17 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HomeProvider>().fetchHomeData();
+
+      context.read<TransactionProvider>().fetchAllData();
     });
+  }
+
+
+  Future<void> _refreshAll() async {
+    await Future.wait([
+      context.read<HomeProvider>().fetchHomeData(),
+      context.read<TransactionProvider>().fetchAllData(),
+    ]);
   }
 
   @override
@@ -41,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         child: Consumer<HomeProvider>(
           builder: (context, homeProvider, child) {
             return RefreshIndicator(
-              onRefresh: () => homeProvider.fetchHomeData(),
+              onRefresh: _refreshAll,
               color: AppColors.primaryGreen,
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -99,8 +110,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
               ],
             ),
             const SizedBox(width: 12),
-            Text(
-              'Bienvenu $agentName',
+            TText(
+              'home_welcome',
+              args: {'name': agentName},
               style: const TextStyle(
                 color: Colors.black87,
                 fontSize: 14,
@@ -179,7 +191,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         ),
         const SizedBox(height: 6),
         Text(
-          _isBalanceHidden ? '••••••••' : (soldeShow.isNotEmpty ? soldeShow : '457 027 440.97 XOF'),
+
+
+          _isBalanceHidden ? '••••••••' : (soldeShow.isNotEmpty ? soldeShow : '— XOF'),
           style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -192,23 +206,29 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   }
 
   Widget _buildQuickActions() {
+
+
     return Row(
       children: [
         Expanded(
           child: _quickActionButton(
             labelKey: 'home_depot',
-            isDepot: true,
+            assetPath: 'assets/images/depot.jpeg',
+            fallbackIcon: Icons.savings_rounded,
+            fallbackColor: Colors.pinkAccent,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const QrScannerScreen(operationType: OperationType.depot)),
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         Expanded(
           child: _quickActionButton(
             labelKey: 'home_retrait',
-            isDepot: false,
+            assetPath: 'assets/images/retrait.jpeg',
+            fallbackIcon: Icons.swap_horiz_rounded,
+            fallbackColor: Colors.blue,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const QrScannerScreen(operationType: OperationType.retrait)),
@@ -221,7 +241,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
 
   Widget _quickActionButton({
     required String labelKey,
-    required bool isDepot,
+    required String assetPath,
+    required IconData fallbackIcon,
+    required Color fallbackColor,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -234,31 +256,21 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
         ),
         child: Column(
           children: [
-            if (isDepot)
-              Image.asset(
-                'assets/images/depot.jpeg',
-                width: 36,
-                height: 36,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.savings_rounded, color: Colors.pinkAccent, size: 36);
-                },
-              )
-            else
-              Image.asset(
-                'assets/images/retrait.jpeg',
-                width: 36,
-                height: 36,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.swap_horiz_rounded, color: Colors.blue, size: 36);
-                },
-              ),
+            Image.asset(
+              assetPath,
+              width: 36,
+              height: 36,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(fallbackIcon, color: fallbackColor, size: 36);
+              },
+            ),
             const SizedBox(height: 12),
             TText(
               labelKey,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
@@ -270,6 +282,12 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   }
 
   Widget _buildTransactionHistory(HomeProvider homeProvider) {
+
+    final transactionProvider = context.watch<TransactionProvider>();
+    final recentTransactions = transactionProvider.transactions.isNotEmpty
+        ? transactionProvider.transactions.take(5).toList()
+        : homeProvider.recentTransactions;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -299,113 +317,36 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
           ],
         ),
         const SizedBox(height: 14),
-        if (homeProvider.isLoading && homeProvider.recentTransactions.isEmpty)
+        if ((transactionProvider.isLoading || homeProvider.isLoading) && recentTransactions.isEmpty)
           const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
-        else if (homeProvider.recentTransactions.isEmpty)
+        else if (recentTransactions.isEmpty)
           _buildDefaultRecentTransactions()
         else
-          ...homeProvider.recentTransactions.map(_buildTransactionTile),
+          ...recentTransactions.map(_buildTransactionTile),
       ],
     );
   }
 
+
   Widget _buildDefaultRecentTransactions() {
-    final List<Map<String, dynamic>> defaultTxs = [
-      {'name': 'Ditoma', 'date': '20/08/2026 à 20:19', 'amount': '5 000 XOF', 'isRetrait': true},
-      {'name': 'Ditoma', 'date': '16/08/2026 à 15:59', 'amount': '5 000 XOF', 'isRetrait': true},
-      {'name': 'Bernard', 'date': '10/08/2026 à 15:46', 'amount': '700 XOF', 'isRetrait': false},
-      {'name': 'Bernard', 'date': '10/08/2026 à 12:10', 'amount': '1 000 XOF', 'isRetrait': true},
-      {'name': 'Bernard', 'date': '10/08/2026 à 12:08', 'amount': '3 000 XOF', 'isRetrait': false},
-    ];
-
-    return Column(
-      children: defaultTxs.map((tx) {
-        final bool isRetrait = tx['isRetrait'] as bool;
-        final item = TransactionItem(
-          id: 'def_${tx['name']}',
-          title: tx['name'] as String,
-          subtitle: tx['date'] as String,
-          amount: 5000,
-          amountShow: tx['amount'] as String,
-          date: DateTime.now(),
-          type: isRetrait ? TransactionType.retrait : TransactionType.depot,
-        );
-
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => TransactionDetailScreen(item: item)),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Stack(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.person_outline, color: Colors.black54, size: 24),
-                    ),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(1.5),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check_circle,
-                          color: AppColors.primaryGreen,
-                          size: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tx['name'] as String,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        tx['date'] as String,
-                        style: const TextStyle(fontSize: 12, color: Colors.black45),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  tx['amount'] as String,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: isRetrait ? Colors.red : AppColors.primaryGreen,
-                  ),
-                ),
-              ],
-            ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.receipt_long_outlined, size: 40, color: Colors.grey.shade400),
+          const SizedBox(height: 12),
+          TText(
+            'home_history_empty',
+            style: TextStyle(color: Colors.black45, fontSize: 14),
+            textAlign: TextAlign.center,
           ),
-        );
-      }).toList(),
+        ],
+      ),
     );
   }
 

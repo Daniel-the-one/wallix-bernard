@@ -1,4 +1,4 @@
-// lib/screens/change_pin_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
@@ -33,14 +33,14 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
 
     if (currentPin.isEmpty || newPin.isEmpty || confirmPin.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+        SnackBar(content: TText('error_fill_fields')),
       );
       return;
     }
 
     if (newPin != confirmPin) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Les nouveaux codes PIN ne correspondent pas')),
+        SnackBar(content: TText('pin_mismatch')),
       );
       return;
     }
@@ -57,8 +57,8 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
         setState(() => _isLoading = false);
         if (res.isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Code de sécurité modifié avec succès !'),
+            SnackBar(
+              content: TText('change_pin_success'),
               backgroundColor: AppColors.primaryGreen,
             ),
           );
@@ -66,7 +66,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(res.message ?? 'échec de la modification du code PIN'),
+              content: Text(res.message ?? TText.of(context).translate('error')),
               backgroundColor: Colors.red,
             ),
           );
@@ -76,7 +76,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('${TText.of(context).translate('error')}: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -100,17 +100,17 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Changer mon code de sécurité',
-                style: TextStyle(
+              TText(
+                'settings_pin',
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Modifier votre code PIN',
+              const TText(
+                'settings_pin_subtitle',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.black45,
@@ -118,21 +118,21 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
               ),
               const SizedBox(height: 32),
               _buildInputField(
-                label: 'Code de sécurité actuel',
+                labelKey: 'current_pin_label',
                 controller: _currentPinController,
-                hintText: 'Entrez le code',
+                hintKey: 'enter_code_hint',
               ),
               const SizedBox(height: 24),
               _buildInputField(
-                label: 'Nouveau code de sécurité',
+                labelKey: 'new_pin_label',
                 controller: _newPinController,
-                hintText: 'Entrez le code',
+                hintKey: 'enter_code_hint',
               ),
               const SizedBox(height: 24),
               _buildInputField(
-                label: 'Confirmer le nouveau code',
+                labelKey: 'confirm_new_pin_label',
                 controller: _confirmPinController,
-                hintText: 'Entrez le code',
+                hintKey: 'enter_code_hint',
               ),
               const SizedBox(height: 40),
               SizedBox(
@@ -150,8 +150,8 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          'Confirmer',
+                      : const TText(
+                          'confirm',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -167,15 +167,15 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
   }
 
   Widget _buildInputField({
-    required String label,
+    required String labelKey,
     required TextEditingController controller,
-    required String hintText,
+    required String hintKey,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
+        TText(
+          labelKey,
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -188,7 +188,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
           obscureText: true,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            hintText: hintText,
+            hintText: TText.of(context).translate(hintKey),
             hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             enabledBorder: OutlineInputBorder(

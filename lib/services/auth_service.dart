@@ -1,7 +1,8 @@
-// lib/services/auth_service.dart
+
 import 'package:flutter/material.dart';
 import '../api/api_config.dart';
 import '../api/api_default.dart';
+import '../api/api_status.dart';
 import '../data/shared_prefs_helper.dart';
 import '../model/auth/login_response.dart';
 import '../model/auth/simple_response.dart';
@@ -47,12 +48,12 @@ class AuthService extends ChangeNotifier {
     final response = await ApiDefault.postData(ApiConfig.usersConnecteUseraccount, {
       'username': agentNumber,
       'code_securite': pin,
-      'type_login': '0', // Login type specified in CYGNE collection
+      'type_login': '0',
     });
 
     final loginResponse = LoginResponse.fromJson(response);
 
-    if (loginResponse.isSuccess || (response['status'] == 'success')) {
+    if (loginResponse.isSuccess || ApiStatus.isSuccess(response['status'])) {
       try {
         _currentUser = loginResponse.user ?? User.fromJson(response);
         _uIdentifiant = _currentUser!.uIdentifiant;
@@ -99,6 +100,37 @@ class AuthService extends ChangeNotifier {
       await _prefs.savePinCode(newPin);
     }
     return result;
+  }
+
+  Future<SimpleResponse> forgotPassword(String phone) async {
+    final response = await ApiDefault.postData(ApiConfig.usersForgetPassword, {
+      'phone': phone,
+      'type_field': 'sms',
+    });
+    return SimpleResponse.fromJson(response);
+  }
+
+
+
+  Future<SimpleResponse> createUserAccount({
+    required String nom,
+    required String prenom,
+    required String telephone,
+    required String codeSecurite,
+  }) async {
+    final String fullPhone = telephone.startsWith('228') ? telephone : '228$telephone';
+    final response = await ApiDefault.postData(ApiConfig.usersCreateUseraccount, {
+      'username': fullPhone,
+      'nom': nom,
+      'prenom': prenom,
+      'telephone': fullPhone,
+      'code_securite': codeSecurite,
+    });
+    return SimpleResponse.fromJson(response);
+  }
+
+  bool verifyPinLocal(String pin) {
+    return _prefs.verifyPin(pin);
   }
 
   void setUserData({required String phoneNumber, String? agentName}) {

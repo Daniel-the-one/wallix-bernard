@@ -1,4 +1,5 @@
-// lib/model/home/infos_response.dart
+
+import '../../api/api_status.dart';
 import 'infos_accueil.dart';
 
 class InfosResponse {
@@ -21,7 +22,7 @@ class InfosResponse {
       info = InfosAccueil.fromJson(json['information'] as Map<String, dynamic>);
     } else if (json['data'] is Map<String, dynamic>) {
       info = InfosAccueil.fromJson(json['data'] as Map<String, dynamic>);
-    } else if (status == 'success') {
+    } else if (ApiStatus.isSuccess(status)) {
       info = InfosAccueil.fromJson(json);
     }
 
@@ -32,5 +33,5 @@ class InfosResponse {
     );
   }
 
-  bool get isSuccess => status == 'success' && information != null;
+  bool get isSuccess => ApiStatus.isSuccess(status) && information != null;
 }

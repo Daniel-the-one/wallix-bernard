@@ -1,9 +1,10 @@
-// lib/screens/commissions_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/t_text.dart';
-import '../services/transaction_service.dart';
+import '../providers/transaction_provider.dart';
 import '../services/amount_formatter.dart';
 import '../model/commission_response.dart';
 
@@ -15,27 +16,22 @@ class CommissionsScreen extends StatefulWidget {
 }
 
 class _CommissionsScreenState extends State<CommissionsScreen> {
-  final TransactionService _transactionService = TransactionService();
-  CommissionResponse? _data;
-  bool _isLoading = false;
   DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _fetchCommissions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+      final provider = context.read<TransactionProvider>();
+      if (provider.commissionData == null) {
+        provider.fetchCommissions();
+      }
+    });
   }
 
-  Future<void> _fetchCommissions() async {
-    setState(() => _isLoading = true);
-    try {
-      final res = await _transactionService.getCommissions();
-      setState(() => _data = res);
-    } catch (e) {
-      debugPrint('Error fetching commissions: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+  Future<void> _refreshCommissions() async {
+    await context.read<TransactionProvider>().fetchCommissions();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -63,7 +59,11 @@ class _CommissionsScreenState extends State<CommissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredItems = _data?.items.where((item) {
+    final transactionProvider = context.watch<TransactionProvider>();
+    final CommissionResponse? commissionData = transactionProvider.commissionData;
+    final bool isLoading = transactionProvider.isLoading;
+
+    final filteredItems = commissionData?.items.where((item) {
           return DateFormat('yyyy-MM-dd').format(item.date) ==
               DateFormat('yyyy-MM-dd').format(_selectedDate);
         }).toList() ??
@@ -84,12 +84,12 @@ class _CommissionsScreenState extends State<CommissionsScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _fetchCommissions,
+        onRefresh: _refreshCommissions,
         color: AppColors.primaryGreen,
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            _buildSummaryCard(_data?.totalGains ?? 0, _data?.gainsToday ?? 0),
+            _buildSummaryCard(commissionData?.totalGains ?? 0, commissionData?.gainsToday ?? 0),
             const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -102,7 +102,7 @@ class _CommissionsScreenState extends State<CommissionsScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            if (_isLoading && _data == null)
+            if (isLoading && commissionData == null)
               const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
             else if (filteredItems.isEmpty)
               const Padding(

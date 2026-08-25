@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/t_text.dart';
 
 class FaqScreen extends StatefulWidget {
   const FaqScreen({super.key});
@@ -8,27 +9,21 @@ class FaqScreen extends StatefulWidget {
 }
 
 class _FaqScreenState extends State<FaqScreen> {
-  final List<Map<String, String>> _faqItems = [
-    {
-      'question': 'Comment effectuer un dépôt ?',
-      'answer': 'Pour effectuer un dépôt, cliquez sur l\'option "Dépôt" depuis la page d\'accueil ou scannez le QR code fourni par le client, puis saisissez le montant souhaité.',
-    },
-    {
-      'question': 'Comment annuler un retrait ?',
-      'answer': 'Tant que le retrait n\'a pas été validé par le client, vous pouvez l\'annuler depuis la liste des retraits ou contacter immédiatement le service client.',
-    },
-    {
-      'question': 'Quand sont versées mes commissions ?',
-      'answer': 'Vos commissions sont calculées automatiquement pour chaque transaction et versées directement sur votre solde agent.',
-    },
-    {
-      'question': 'Le client ne reçoit pas la demande de retrait ?',
-      'answer': 'Vérifiez la connexion réseau du téléphone client ou réessayez en générant un nouveau QR code de retrait.',
-    },
-    {
-      'question': 'Comment changer mon code PIN ?',
-      'answer': 'Rendez-vous dans la section Paramètres > Changer mon code de sécurité, puis entrez votre ancien code et votre nouveau code PIN.',
-    },
+
+  static const List<String> _faqQuestionKeys = [
+    'faq_q_deposit',
+    'faq_q_cancel_retrait',
+    'faq_q_commissions',
+    'faq_q_client_no_request',
+    'faq_q_change_pin',
+  ];
+
+  static const List<String> _faqAnswerKeys = [
+    'faq_a_deposit',
+    'faq_a_cancel_retrait',
+    'faq_a_commissions',
+    'faq_a_client_no_request',
+    'faq_a_change_pin',
   ];
 
   final Map<int, bool> _expandedState = {};
@@ -44,8 +39,8 @@ class _FaqScreenState extends State<FaqScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'FAQ',
+        title: const TText(
+          'settings_faq_title',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -56,9 +51,8 @@ class _FaqScreenState extends State<FaqScreen> {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        itemCount: _faqItems.length,
+        itemCount: _faqQuestionKeys.length,
         itemBuilder: (context, index) {
-          final item = _faqItems[index];
           final isExpanded = _expandedState[index] ?? false;
 
           return Container(
@@ -71,8 +65,8 @@ class _FaqScreenState extends State<FaqScreen> {
               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
                 tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                title: Text(
-                  item['question']!,
+                title: TText(
+                  _faqQuestionKeys[index],
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -91,8 +85,8 @@ class _FaqScreenState extends State<FaqScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    child: Text(
-                      item['answer']!,
+                    child: TText(
+                      _faqAnswerKeys[index],
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.black54,
@@ -109,4 +103,3 @@ class _FaqScreenState extends State<FaqScreen> {
     );
   }
 }
-

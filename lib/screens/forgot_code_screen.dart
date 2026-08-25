@@ -1,9 +1,11 @@
-// lib/view/forgot_code_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../api/api_service.dart';
+import '../services/auth_service.dart';
+import '../widgets/t_text.dart';
 
 class ForgotCodeScreen extends StatefulWidget {
   const ForgotCodeScreen({super.key});
@@ -62,9 +64,9 @@ class _ForgotCodeScreenState extends State<ForgotCodeScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Choisir un pays',
-                            style: TextStyle(
+                          TText(
+                            'country_picker_title',
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -80,7 +82,7 @@ class _ForgotCodeScreenState extends State<ForgotCodeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: 'Rechercher un pays',
+                          hintText: TText.of(context).translate('country_picker_search'),
                           prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -135,22 +137,33 @@ class _ForgotCodeScreenState extends State<ForgotCodeScreen> {
 
     try {
       final phone = '+${_selectedCountry.phoneCode}${_phoneController.text}';
-      // Appel API générique pour la demande de réinitialisation
-      await ApiService().post('users/forgot_password_request', {
-        'numero_agent': phone,
-        'phone': phone,
-      });
 
-      setState(() {
-        _isLoading = false;
-        _requestSent = true;
-      });
+      final result = await context.read<AuthService>().forgotPassword(phone);
+
+      if (!mounted) return;
+      if (result.isSuccess) {
+        setState(() {
+          _isLoading = false;
+          _requestSent = true;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message ?? TText.of(context).translate('forgot_error')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur : $e')),
+        SnackBar(content: Text('${TText.of(context).translate('error')} : $e')),
       );
     }
   }
@@ -195,16 +208,16 @@ class _ForgotCodeScreenState extends State<ForgotCodeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Code oublié ?', style: AppTextStyles.title),
+        TText('forgot_pin', style: AppTextStyles.title),
         const SizedBox(height: 8),
-        Text(
-          'Entrez votre numéro de téléphone. Notre équipe traitera votre demande de réinitialisation.',
+        TText(
+          'forgot_desc',
           style: AppTextStyles.description,
         ),
 
         const SizedBox(height: 40),
 
-        Text('Numéro de téléphone', style: AppTextStyles.button),
+        TText('phone_label', style: AppTextStyles.button),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -268,9 +281,9 @@ class _ForgotCodeScreenState extends State<ForgotCodeScreen> {
                       color: Colors.black,
                     ),
                   )
-                : const Text(
-                    'Envoyer la demande',
-                    style: TextStyle(
+                : TText(
+                    'forgot_submit',
+                    style: const TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
@@ -301,15 +314,15 @@ class _ForgotCodeScreenState extends State<ForgotCodeScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Demande envoyée',
+          const TText(
+            'forgot_success_title',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              'Votre demande a été enregistrée et sera prise en compte par notre équipe dans les plus brefs délais.',
+            child: TText(
+              'forgot_success_desc',
               textAlign: TextAlign.center,
               style: AppTextStyles.description,
             ),
@@ -317,8 +330,8 @@ class _ForgotCodeScreenState extends State<ForgotCodeScreen> {
           const SizedBox(height: 32),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Retour à la connexion',
+            child: const TText(
+              'forgot_back_login',
               style: TextStyle(
                 color: AppColors.primaryGreen,
                 fontWeight: FontWeight.w600,

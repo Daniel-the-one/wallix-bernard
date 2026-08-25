@@ -1,4 +1,5 @@
-// lib/model/auth/simple_response.dart
+
+import '../../api/api_status.dart';
 
 class SimpleResponse {
   final String status;
@@ -19,5 +20,5 @@ class SimpleResponse {
     );
   }
 
-  bool get isSuccess => status == 'success';
+  bool get isSuccess => ApiStatus.isSuccess(status);
 }

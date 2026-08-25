@@ -1,4 +1,5 @@
-// lib/model/transaction_result.dart
+
+import '../api/api_status.dart';
 import 'transaction_item.dart';
 
 class TransactionResult {
@@ -87,5 +88,5 @@ class TransactionResult {
     return DateTime.now();
   }
 
-  bool get isSuccess => status == 'success';
+  bool get isSuccess => ApiStatus.isSuccess(status);
 }

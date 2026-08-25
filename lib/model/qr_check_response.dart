@@ -1,4 +1,5 @@
-// lib/model/qr_check_response.dart
+
+import '../api/api_status.dart';
 import 'client_info.dart';
 
 class QrCheckResponse {
@@ -68,5 +69,5 @@ class QrCheckResponse {
     );
   }
 
-  bool get isSuccess => status == 'success' || (nomComplet != null && nomComplet!.isNotEmpty);
+  bool get isSuccess => ApiStatus.isSuccess(status) || (nomComplet != null && nomComplet!.isNotEmpty);
 }

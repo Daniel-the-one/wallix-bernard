@@ -1,4 +1,4 @@
-// lib/services/qr_service.dart
+
 import 'package:flutter/foundation.dart';
 import '../api/api_config.dart';
 import '../api/api_default.dart';
@@ -9,8 +9,8 @@ class QrService {
   factory QrService() => _instance;
   QrService._internal();
 
-  /// Vérifie et valide le QR code d'un client
-  /// Endpoint: contacts/check_qr
+
+
   Future<QrCheckResponse> checkQrCode(String qrCode) async {
     try {
       final response = await ApiDefault.postData(ApiConfig.contactsCheckQr, {

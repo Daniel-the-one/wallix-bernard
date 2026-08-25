@@ -1,7 +1,8 @@
-// lib/services/home_service.dart
+
 import 'package:flutter/foundation.dart';
 import '../api/api_config.dart';
 import '../api/api_default.dart';
+import '../api/api_status.dart';
 import '../model/home/infos_accueil.dart';
 import '../model/home/infos_response.dart';
 
@@ -10,8 +11,8 @@ class HomeService {
   factory HomeService() => _instance;
   HomeService._internal();
 
-  /// Charge les informations du tableau de bord agent (start)
-  /// Endpoint: agents/start
+
+
   Future<InfosAccueil?> loadHomeData() async {
     return _loadHomeData();
   }
@@ -25,7 +26,7 @@ class HomeService {
 
       if (infosResponse.isSuccess && infosResponse.information != null) {
         return infosResponse.information;
-      } else if (response['status'] == 'success') {
+      } else if (ApiStatus.isSuccess(response['status'])) {
         return InfosAccueil.fromJson(response);
       }
       return null;

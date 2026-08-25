@@ -1,4 +1,5 @@
-// lib/model/auth/login_response.dart
+
+import '../../api/api_status.dart';
 import 'user.dart';
 
 class LoginResponse {
@@ -46,5 +47,5 @@ class LoginResponse {
     );
   }
 
-  bool get isSuccess => status == 'success' || (user != null && user!.uIdentifiant.isNotEmpty);
+  bool get isSuccess => ApiStatus.isSuccess(status) || (user != null && user!.uIdentifiant.isNotEmpty);
 }
